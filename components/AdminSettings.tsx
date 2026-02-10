@@ -13,6 +13,14 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ companyInfo, setCompanyIn
     setCompanyInfo({ ...companyInfo, [name]: value });
   };
 
+  const handlePricingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setCompanyInfo({ 
+      ...companyInfo, 
+      pricing: { ...companyInfo.pricing, [name]: parseFloat(value) || 0 }
+    });
+  };
+
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -54,65 +62,84 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ companyInfo, setCompanyIn
             <p className="mt-4 text-xs font-bold text-slate-900">{companyInfo.nameTh}</p>
           </div>
 
-          <div className="bg-indigo-900 p-8 rounded-[2rem] text-white shadow-xl">
-             <h4 className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest mb-4">ข้อมูลการชำระเงิน</h4>
+          <div className="bg-slate-900 p-8 rounded-[2rem] text-white shadow-xl">
+             <h4 className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-4">กำหนดราคาค่าสมาชิก (Pricing Config)</h4>
              <div className="space-y-4">
-               <div>
-                 <label className="text-[9px] uppercase opacity-50 block mb-1">ธนาคาร</label>
-                 <input name="bankName" value={companyInfo.bankName} onChange={handleChange} className="w-full bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:bg-white/20" />
-               </div>
-               <div>
-                 <label className="text-[9px] uppercase opacity-50 block mb-1">ชื่อบัญชี</label>
-                 <input name="accountName" value={companyInfo.accountName} onChange={handleChange} className="w-full bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:bg-white/20" />
-               </div>
-               <div>
-                 <label className="text-[9px] uppercase opacity-50 block mb-1">เลขบัญชี</label>
-                 <input name="accountNumber" value={companyInfo.accountNumber} onChange={handleChange} className="w-full bg-white/10 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:bg-white/20 font-mono" />
-               </div>
+                <div>
+                  <label className="text-[9px] text-slate-400 uppercase block mb-1">รายเดือน (บาท)</label>
+                  <input 
+                    type="number" 
+                    name="monthlyPrice" 
+                    value={companyInfo.pricing.monthlyPrice} 
+                    onChange={handlePricingChange}
+                    className="w-full bg-slate-800 border-none rounded-xl py-2 px-3 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[9px] text-slate-400 uppercase block mb-1">รายปี (บาท)</label>
+                  <input 
+                    type="number" 
+                    name="yearlyPrice" 
+                    value={companyInfo.pricing.yearlyPrice} 
+                    onChange={handlePricingChange}
+                    className="w-full bg-slate-800 border-none rounded-xl py-2 px-3 text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
              </div>
           </div>
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div className="md:col-span-2">
-                 <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">ชื่อบริษัท</label>
-                 <input name="nameTh" value={companyInfo.nameTh} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-bold" />
-               </div>
-               <div className="md:col-span-2">
-                 <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">ที่อยู่บริษัท</label>
-                 <textarea name="addressTh" value={companyInfo.addressTh} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 h-24 resize-none" />
-               </div>
-               <div>
-                 <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">เลขประจำตัวผู้เสียภาษี</label>
-                 <input name="taxId" value={companyInfo.taxId} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-mono" />
-               </div>
-               <div>
-                 <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">พิกัด GPS</label>
-                 <input name="coordinates" value={companyInfo.coordinates} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="13.788, 99.991" />
-               </div>
-               <div>
-                 <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">เบอร์โทรศัพท์ (Office)</label>
-                 <input name="phone" value={companyInfo.phone} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500" />
-               </div>
-               <div>
-                 <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">เบอร์มือถือ (Mobile)</label>
-                 <input name="mobile" value={companyInfo.mobile} onChange={handleChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500" />
-               </div>
-             </div>
-             
-             <div className="pt-6 border-t border-slate-50">
-                <a 
-                  href={`https://www.google.com/maps?q=${companyInfo.coordinates}`} 
-                  target="_blank" 
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 text-indigo-600 font-bold text-xs hover:underline"
-                >
-                  📍 ตรวจสอบตำแหน่งบน Google Maps
-                </a>
-             </div>
-          </div>
+           <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div>
+                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ชื่อบริษัท (ภาษาไทย)</label>
+                   <input type="text" name="nameTh" value={companyInfo.nameTh} onChange={handleChange} className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none" />
+                 </div>
+                 <div>
+                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ชื่อบริษัท (English)</label>
+                   <input type="text" name="nameEn" value={companyInfo.nameEn} onChange={handleChange} className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none" />
+                 </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ที่อยู่จดทะเบียน</label>
+                <textarea name="addressTh" value={companyInfo.addressTh} onChange={handleChange} className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none h-24 resize-none" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                 <div>
+                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Tax ID</label>
+                   <input type="text" name="taxId" value={companyInfo.taxId} onChange={handleChange} className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-mono" />
+                 </div>
+                 <div>
+                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Office Phone</label>
+                   <input type="text" name="phone" value={companyInfo.phone} onChange={handleChange} className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none" />
+                 </div>
+                 <div>
+                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Mobile</label>
+                   <input type="text" name="mobile" value={companyInfo.mobile} onChange={handleChange} className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none" />
+                 </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-50">
+                 <h4 className="text-sm font-black text-slate-800 mb-4 flex items-center gap-2"><span>🏦</span> ข้อมูลบัญชีรับเงิน (สำหรับบิล/ใบเสร็จ)</h4>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ชื่อธนาคาร</label>
+                      <input type="text" name="bankName" value={companyInfo.bankName} onChange={handleChange} className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">เลขที่บัญชี</label>
+                      <input type="text" name="accountNumber" value={companyInfo.accountNumber} onChange={handleChange} className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none font-black text-indigo-600" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ชื่อบัญชี</label>
+                      <input type="text" name="accountName" value={companyInfo.accountName} onChange={handleChange} className="w-full bg-slate-50 border-none rounded-xl py-3 px-4 text-sm focus:ring-2 focus:ring-amber-500 outline-none" />
+                    </div>
+                 </div>
+              </div>
+           </div>
         </div>
       </div>
     </div>

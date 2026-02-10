@@ -8,10 +8,12 @@ import AccountingSystem from './components/AccountingSystem';
 import DailyManagement from './components/DailyManagement';
 import StaffManagement from './components/StaffManagement';
 import AdminSettings from './components/AdminSettings';
+import MembershipManagement from './components/MembershipManagement';
 import Login from './components/Login';
-import { Property, PropertyStatus, RepairStatus, AccountingDocument, RentalType, Expense, UserRole, Staff, CompanyInfo } from './types';
+import { Property, PropertyStatus, RepairStatus, AccountingDocument, RentalType, Expense, UserRole, Staff, CompanyInfo, SubscriptionTier } from './types';
 import { STATUS_COLORS, STATUS_LABELS } from './constants';
 import { queryPropertiesWithAI, getPropertyInsights } from './services/geminiService';
+import { calculateCurrentStatus } from './utils/propertyUtils';
 
 const INITIAL_COMPANY: CompanyInfo = {
   nameTh: "บริษัท เฟิร์สอาร์เธอร์ จำกัด",
@@ -24,7 +26,17 @@ const INITIAL_COMPANY: CompanyInfo = {
   phone: "034106940",
   mobile: "0955581926",
   coordinates: "13.788395, 99.991404",
-  logo: "🏢"
+  logo: "🏢",
+  subscription: {
+    tier: SubscriptionTier.FREE,
+    plan: 'NONE',
+    autoRenew: false
+  },
+  pricing: {
+    monthlyPrice: 990,
+    yearlyPrice: 9900,
+    currency: 'THB'
+  }
 };
 
 const MOCK_PROPERTIES: Property[] = [
@@ -41,7 +53,7 @@ const MOCK_PROPERTIES: Property[] = [
     rentAmount: 25000,
     paymentDueDate: 5,
     contractStartDate: '2023-12-01',
-    contractEndDate: '2024-11-30',
+    contractEndDate: '2025-11-30',
     tenantName: 'John Doe',
     tenantPhone: '081-234-5678',
     bookings: [],
@@ -76,7 +88,9 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [properties, setProperties] = useState<Property[]>(() => {
     const saved = localStorage.getItem('firstarthur_properties');
-    return saved ? JSON.parse(saved) : MOCK_PROPERTIES;
+    const raw = saved ? JSON.parse(saved) : MOCK_PROPERTIES;
+    // Apply real-time status on initial load
+    return raw.map((p: Property) => ({ ...p, status: calculateCurrentStatus(p) }));
   });
   const [filteredProperties, setFilteredProperties] = useState<Property[]>(properties);
   const [accountingDocs, setAccountingDocs] = useState<AccountingDocument[]>([]);
@@ -124,7 +138,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (role === UserRole.USER) {
-      const restrictedTabs = ['dashboard', 'accounting', 'staff', 'notifications', 'reports', 'settings'];
+      const restrictedTabs = ['dashboard', 'accounting', 'staff', 'notifications', 'reports', 'settings', 'membership'];
       if (restrictedTabs.includes(activeTab)) {
         setActiveTab('properties');
       }
@@ -138,6 +152,14 @@ const App: React.FC = () => {
     };
     fetchInsight();
   }, [properties]);
+
+  // Periodic status update (every minute)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProperties(prev => prev.map(p => ({ ...p, status: calculateCurrentStatus(p) })));
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleLogin = (selectedRole: UserRole) => {
     setRole(selectedRole);
@@ -164,7 +186,8 @@ const App: React.FC = () => {
   };
 
   const handleUpdateProperty = (updated: Property) => {
-    const newProps = properties.map(p => p.id === updated.id ? updated : p);
+    const refreshed = { ...updated, status: calculateCurrentStatus(updated) };
+    const newProps = properties.map(p => p.id === refreshed.id ? refreshed : p);
     setProperties(newProps);
     setFilteredProperties(newProps);
   };
@@ -185,16 +208,18 @@ const App: React.FC = () => {
       return;
     }
 
-    const createdProperty: Property = {
+    const baseProperty: Property = {
       ...newPropData as Property,
       id: Math.random().toString(36).substr(2, 9),
-      status: (newPropData.tenantName && newPropData.contractStartDate) ? PropertyStatus.OCCUPIED : PropertyStatus.VACANT,
       bookings: [],
       documents: [],
       expenses: [],
       inspections: [],
       repairStatus: RepairStatus.NORMAL
     };
+
+    // Determine initial status based on real-time data
+    const createdProperty = { ...baseProperty, status: calculateCurrentStatus(baseProperty) };
 
     const updatedProps = [createdProperty, ...properties];
     setProperties(updatedProps);
@@ -245,6 +270,11 @@ const App: React.FC = () => {
             <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${role === UserRole.ADMIN ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-indigo-100 text-indigo-800 border-indigo-200'}`}>
               Mode: {role}
             </div>
+            {companyInfo.subscription.tier === SubscriptionTier.PREMIUM && (
+              <div className="px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-full text-[10px] font-black uppercase tracking-widest">
+                Premium Account
+              </div>
+            )}
             <button onClick={handleLogout} className="px-3 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl text-xs font-bold transition-all">🚪 Logout</button>
             <div className="h-8 w-px bg-slate-200"></div>
             <button onClick={() => window.print()} className="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-xl flex items-center gap-2 hover:bg-slate-800 transition-colors">
@@ -307,6 +337,8 @@ const App: React.FC = () => {
           )}
 
           {activeTab === 'staff' && role === UserRole.ADMIN && <StaffManagement staffList={staffMembers} onDeleteStaff={(id) => setStaffMembers(staffMembers.filter(s => s.id !== id))} />}
+
+          {activeTab === 'membership' && role === UserRole.ADMIN && <MembershipManagement company={companyInfo} setCompany={setCompanyInfo} />}
 
           {activeTab === 'settings' && role === UserRole.ADMIN && (
             <AdminSettings companyInfo={companyInfo} setCompanyInfo={setCompanyInfo} />

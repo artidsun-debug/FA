@@ -29,12 +29,17 @@ const Dashboard: React.FC<DashboardProps> = ({ properties, aiInsight, company })
     let totalCommission = 0;
     const now = new Date();
     const expiringSoon: Property[] = [];
+    const vacantRooms: Property[] = [];
     let activeContracts = 0;
 
     properties.forEach(p => {
       if (p.status === PropertyStatus.OCCUPIED) {
         totalRent += p.rentAmount;
         activeContracts++;
+      }
+      
+      if (p.status === PropertyStatus.VACANT) {
+        vacantRooms.push(p);
       }
       
       // Calculate Commissions from expenses
@@ -55,7 +60,7 @@ const Dashboard: React.FC<DashboardProps> = ({ properties, aiInsight, company })
       }
     });
 
-    return { totalRent, totalCommission, expiringSoon, activeContracts };
+    return { totalRent, totalCommission, expiringSoon, vacantRooms, activeContracts };
   }, [properties]);
 
   return (
@@ -110,40 +115,74 @@ const Dashboard: React.FC<DashboardProps> = ({ properties, aiInsight, company })
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          {/* Expiring Soon Section */}
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
-            <div className="flex justify-between items-center mb-6">
-               <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                 <span>⏰</span> การต่อสัญญา (หมดอายุภายใน 30 วัน)
-               </h3>
-               <span className="bg-rose-100 text-rose-600 text-[10px] font-black px-3 py-1 rounded-full uppercase">
-                 {stats.expiringSoon.length} รายการ
-               </span>
-            </div>
-            
-            <div className="space-y-4">
-               {stats.expiringSoon.length > 0 ? (
-                 stats.expiringSoon.map(p => (
-                   <div key={p.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Vacant Rooms List */}
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <span>🟢</span> ห้องพักที่ว่าง (Vacant)
+                </h3>
+                <span className="bg-emerald-100 text-emerald-600 text-[10px] font-black px-3 py-1 rounded-full uppercase">
+                  {stats.vacantRooms.length} รายการ
+                </span>
+              </div>
+              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {stats.vacantRooms.length > 0 ? (
+                  stats.vacantRooms.map(p => (
+                    <div key={p.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
                       <div className="flex items-center gap-4">
-                         <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-lg">📄</div>
-                         <div>
-                            <p className="text-sm font-bold text-slate-900">{p.name} {p.roomNumber && `(${p.roomNumber})`}</p>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">สิ้นสุดวันที่: {p.contractEndDate}</p>
-                         </div>
+                        <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-lg">🏠</div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">{p.name} {p.roomNumber && `(${p.roomNumber})`}</p>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">฿{p.rentAmount.toLocaleString()} / เดือน</p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                         <p className="text-xs font-black text-rose-600 mb-1">ใกล้หมดอายุ</p>
-                         <button className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest hover:underline">จัดการต่อสัญญา</button>
-                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-12 text-center text-slate-300">
+                    <p className="text-3xl mb-2">🏘️</p>
+                    <p className="text-sm font-bold">ไม่มีห้องว่างในขณะนี้</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Expiring Soon Section */}
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+              <div className="flex justify-between items-center mb-6">
+                 <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                   <span>⏰</span> รอต่อสัญญา (Expiring)
+                 </h3>
+                 <span className="bg-rose-100 text-rose-600 text-[10px] font-black px-3 py-1 rounded-full uppercase">
+                   {stats.expiringSoon.length} รายการ
+                 </span>
+              </div>
+              
+              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                 {stats.expiringSoon.length > 0 ? (
+                   stats.expiringSoon.map(p => (
+                     <div key={p.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
+                        <div className="flex items-center gap-4">
+                           <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-lg">📄</div>
+                           <div>
+                              <p className="text-sm font-bold text-slate-900">{p.name} {p.roomNumber && `(${p.roomNumber})`}</p>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">สิ้นสุดวันที่: {p.contractEndDate}</p>
+                           </div>
+                        </div>
+                        <div className="text-right">
+                           <p className="text-xs font-black text-rose-600 mb-1">ใกล้หมดอายุ</p>
+                        </div>
+                     </div>
+                   ))
+                 ) : (
+                   <div className="py-12 text-center text-slate-300">
+                      <p className="text-3xl mb-2">🎉</p>
+                      <p className="text-sm font-bold">ไม่มีสัญญาที่ใกล้หมดอายุ</p>
                    </div>
-                 ))
-               ) : (
-                 <div className="py-12 text-center text-slate-300">
-                    <p className="text-3xl mb-2">🎉</p>
-                    <p className="text-sm font-bold">ไม่มีสัญญาที่กำลังจะหมดอายุในเร็วๆ นี้</p>
-                 </div>
-               )}
+                 )}
+              </div>
             </div>
           </div>
 
@@ -226,6 +265,21 @@ const Dashboard: React.FC<DashboardProps> = ({ properties, aiInsight, company })
           </div>
         </div>
       </div>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #e2e8f0;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #cbd5e1;
+        }
+      `}</style>
     </div>
   );
 };

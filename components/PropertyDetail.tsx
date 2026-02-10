@@ -137,7 +137,8 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property, onUpdate, onD
       onUpdate({ ...property, documents: [...property.documents, newDoc] });
       setIsUploading(null);
     };
-    reader.readAsDataURL(file);
+    // Fix: Cast file as Blob to ensure TypeScript correctly handles it for readAsDataURL
+    reader.readAsDataURL(file as Blob);
     e.target.value = '';
   };
 
@@ -145,7 +146,8 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property, onUpdate, onD
   const handleInspectionPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    Array.from(files).forEach(file => {
+    // Fix: Explicitly cast Array.from result to File[] to prevent 'unknown' inference in some environments
+    (Array.from(files) as File[]).forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewInspection(prev => ({
@@ -153,7 +155,8 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property, onUpdate, onD
           images: [...(prev.images || []), reader.result as string]
         }));
       };
-      reader.readAsDataURL(file);
+      // Fix: Cast file as Blob to ensure TypeScript correctly handles it for readAsDataURL
+      reader.readAsDataURL(file as Blob);
     });
   };
 

@@ -33,6 +33,25 @@ export enum InspectionCategory {
   OTHER = 'อื่นๆ'
 }
 
+export enum SubscriptionTier {
+  FREE = 'FREE',
+  PREMIUM = 'PREMIUM'
+}
+
+export interface SubscriptionInfo {
+  tier: SubscriptionTier;
+  plan: 'MONTHLY' | 'YEARLY' | 'NONE';
+  startDate?: string;
+  expiryDate?: string;
+  autoRenew: boolean;
+}
+
+export interface PricingConfig {
+  monthlyPrice: number;
+  yearlyPrice: number;
+  currency: string;
+}
+
 export interface CompanyInfo {
   nameTh: string;
   nameEn: string;
@@ -45,6 +64,8 @@ export interface CompanyInfo {
   mobile: string;
   coordinates: string;
   logo: string;
+  subscription: SubscriptionInfo;
+  pricing: PricingConfig;
 }
 
 export interface Staff {

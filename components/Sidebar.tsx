@@ -15,6 +15,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, role, compan
     { id: 'properties', icon: '🏠', label: 'จัดการที่พัก', roles: [UserRole.ADMIN, UserRole.USER] },
     { id: 'daily', icon: '🗓️', label: 'จัดการรายวัน', roles: [UserRole.ADMIN, UserRole.USER] },
     { id: 'accounting', icon: '🧾', label: 'ระบบบัญชี', roles: [UserRole.ADMIN] },
+    { id: 'membership', icon: '💎', label: 'สมาชิกและแพ็คเกจ', roles: [UserRole.ADMIN] },
     { id: 'staff', icon: '👥', label: 'จัดการทีมงาน', roles: [UserRole.ADMIN] },
     { id: 'notifications', icon: '🔔', label: 'การแจ้งเตือน', roles: [UserRole.ADMIN] },
     { id: 'reports', icon: '📝', label: 'รายงานสรุป', roles: [UserRole.ADMIN] },
@@ -24,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, role, compan
   const menuItems = allMenuItems.filter(item => item.roles.includes(role));
 
   return (
-    <div className="w-64 bg-slate-900 text-white min-h-screen flex flex-col no-print shadow-2xl">
+    <div className="w-64 bg-slate-900 text-white min-h-screen flex flex-col no-print shadow-2xl shrink-0">
       <div className="p-6">
         <h1 className="text-xl font-bold tracking-wider text-amber-500 uppercase truncate">{companyName.split(' ')[0]}</h1>
         <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-widest">Management Suite</p>
