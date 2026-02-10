@@ -35,7 +35,8 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({ onSelect }) => {
         </button>
 
         <button 
-          onClick={() => onSelect(UserRole.USER)}
+          // Fix: UserRole.USER does not exist on UserRole enum. Using UserRole.STAFF instead for "Staff / User" role selection.
+          onClick={() => onSelect(UserRole.STAFF)}
           className="group relative bg-slate-900 border border-slate-800 p-10 rounded-3xl hover:border-indigo-500 transition-all text-left overflow-hidden"
         >
           <div className="absolute top-0 right-0 p-8 text-6xl opacity-10 group-hover:opacity-20 transition-opacity">🏢</div>

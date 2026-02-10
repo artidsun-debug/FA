@@ -8,7 +8,18 @@ export enum PropertyStatus {
 
 export enum UserRole {
   ADMIN = 'ADMIN',
-  USER = 'USER'
+  STAFF = 'STAFF', // Agent
+  OWNER = 'OWNER',
+  TENANT = 'TENANT',
+  CO_AGENT = 'CO_AGENT',
+  CO_TENANT = 'CO_TENANT',
+  LAWYER = 'LAWYER'
+}
+
+export enum ApprovalStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED'
 }
 
 export enum RentalType {
@@ -70,13 +81,18 @@ export interface CompanyInfo {
 
 export interface Staff {
   id: string;
+  memberCode: string;
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   username: string;
   password: string;
-  role: UserRole.USER;
+  role: UserRole;
+  approvalStatus: ApprovalStatus; // สำหรับ Agent (Staff) เท่านั้น
+  idCardNumber?: string;
+  idCardPhoto?: string;
+  deedPhoto?: string; // โฉนดที่ดิน
   createdAt: string;
 }
 
@@ -93,7 +109,7 @@ export interface Expense {
   id: string;
   title: string;
   amount: number;
-  category: 'COMMON_FEE' | 'REPAIR' | 'UTILITY' | 'COMMISSION' | 'MANAGEMENT_FEE' | 'OTHER';
+  category: 'COMMON_FEE' | 'REPAIR' | 'UTILITY' | 'COMMISSION' | 'MANAGEMENT_FEE' | 'LAND_TAX' | 'OTHER_SERVICE' | 'OTHER';
   date: string;
   status: 'UNPAID' | 'PAID';
   receiptUrl?: string;
@@ -111,43 +127,12 @@ export interface Booking {
   status: 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED';
 }
 
-export interface AccountingItem {
-  id: string;
-  description: string;
-  quantity: number;
-  pricePerUnit: number;
-  total: number;
-}
-
-export type AccountingDocType = 'QUOTATION' | 'RECEIPT' | 'WHT' | 'INVOICE';
-
-export interface AccountingDocument {
-  id: string;
-  type: AccountingDocType;
-  docNumber: string;
-  date: string;
-  clientName: string;
-  clientAddress: string;
-  clientTaxId?: string;
-  items: AccountingItem[];
-  subtotal: number;
-  vatPercent: number;
-  vatAmount: number;
-  whtPercent: number;
-  whtAmount: number;
-  grandTotal: number;
-  status: 'DRAFT' | 'SENT' | 'PAID' | 'CANCELLED';
-}
-
-export interface InspectionItem {
-  id: string;
-  category: InspectionCategory;
-  description: string;
-  isOk: boolean;
-  damageDetails?: string;
-  images: string[];
-  date: string;
-  inspectorName?: string;
+export interface LinkedMember {
+  memberId: string;
+  memberCode: string;
+  name: string;
+  role: UserRole;
+  joinedDate: string;
 }
 
 export interface Property {
@@ -170,9 +155,26 @@ export interface Property {
   documents: Document[];
   expenses: Expense[];
   inspections: InspectionItem[];
+  linkedMembers: LinkedMember[];
   repairStatus: RepairStatus;
   cancellationReason?: string;
   cancellationDate?: string;
+}
+
+export interface InspectionItem {
+  id: string;
+  category: InspectionCategory;
+  description: string;
+  isOk: boolean;
+  damageDetails?: string;
+  images: string[];
+  date: string;
+  inspectorName?: string;
+  repairNeeded?: boolean;
+  repairEstimatedCost?: number;
+  repairActualCost?: number;
+  repairStatus?: 'PENDING' | 'QUOTED' | 'CONFIRMED' | 'DONE';
+  linkedExpenseId?: string;
 }
 
 export interface AppNotification {
@@ -182,4 +184,32 @@ export interface AppNotification {
   date: string;
   type: 'PAYMENT' | 'CONTRACT' | 'SYSTEM';
   isRead: boolean;
+}
+
+export type AccountingDocType = 'RECEIPT' | 'INVOICE' | 'QUOTATION';
+
+export interface AccountingItem {
+  id: string;
+  description: string;
+  quantity: number;
+  pricePerUnit: number;
+  total: number;
+}
+
+export interface AccountingDocument {
+  id: string;
+  type: AccountingDocType;
+  docNumber: string;
+  date: string;
+  clientName: string;
+  clientAddress: string;
+  clientTaxId: string;
+  items: AccountingItem[];
+  subtotal: number;
+  vatPercent: number;
+  vatAmount: number;
+  whtPercent: number;
+  whtAmount: number;
+  grandTotal: number;
+  status: 'DRAFT' | 'SENT' | 'PAID' | 'VOID';
 }

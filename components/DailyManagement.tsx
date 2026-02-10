@@ -7,9 +7,10 @@ interface DailyManagementProps {
   onUpdateProperty: (property: Property) => void;
   onAddProperty: () => void;
   onDeleteProperty: (id: string) => void;
+  onExportExcel: () => void;
 }
 
-const DailyManagement: React.FC<DailyManagementProps> = ({ properties, onUpdateProperty, onAddProperty, onDeleteProperty }) => {
+const DailyManagement: React.FC<DailyManagementProps> = ({ properties, onUpdateProperty, onAddProperty, onDeleteProperty, onExportExcel }) => {
   const dailyProps = properties.filter(p => p.rentalType === RentalType.DAILY);
   
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
@@ -162,6 +163,12 @@ const DailyManagement: React.FC<DailyManagementProps> = ({ properties, onUpdateP
               ปฏิทิน
             </button>
           </div>
+          <button 
+            onClick={onExportExcel}
+            className="px-6 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
+          >
+            <span>📊</span> Excel
+          </button>
           <button 
             onClick={onAddProperty}
             className="px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-all"
