@@ -34,6 +34,24 @@ export enum RepairStatus {
   COMPLETED = 'COMPLETED'
 }
 
+export enum PaymentStatus {
+  PENDING = 'PENDING',
+  VERIFYING = 'VERIFYING',
+  PAID = 'PAID',
+  OVERDUE = 'OVERDUE'
+}
+
+export interface PaymentRecord {
+  id: string;
+  month: string; // YYYY-MM
+  amount: number;
+  dueDate: string;
+  status: PaymentStatus;
+  proofUrl?: string;
+  paidDate?: string;
+  verifiedBy?: string; // ชื่อผู้ที่กดยืนยัน (Agent/Owner)
+}
+
 export enum InspectionCategory {
   ARCHITECTURAL = 'งานสถาปัตย์',
   PLUMBING = 'งานระบบปะปา',
@@ -89,10 +107,10 @@ export interface Staff {
   username: string;
   password: string;
   role: UserRole;
-  approvalStatus: ApprovalStatus; // สำหรับ Agent (Staff) เท่านั้น
+  approvalStatus: ApprovalStatus;
   idCardNumber?: string;
   idCardPhoto?: string;
-  deedPhoto?: string; // โฉนดที่ดิน
+  deedPhoto?: string;
   createdAt: string;
 }
 
@@ -103,6 +121,35 @@ export interface Document {
   category: 'CONTRACT' | 'TENANT_ID' | 'OWNER_DOCS' | 'POA' | 'TM30' | 'OTHER';
   url: string;
   uploadDate: string;
+}
+
+// Fixed missing accounting related types
+export type AccountingDocType = 'RECEIPT' | 'INVOICE' | 'QUOTATION';
+
+export interface AccountingItem {
+  id: string;
+  description: string;
+  quantity: number;
+  pricePerUnit: number;
+  total: number;
+}
+
+export interface AccountingDocument {
+  id: string;
+  type: AccountingDocType;
+  docNumber: string;
+  date: string;
+  clientName: string;
+  clientAddress: string;
+  clientTaxId: string;
+  items: AccountingItem[];
+  subtotal: number;
+  vatPercent: number;
+  vatAmount: number;
+  whtPercent: number;
+  whtAmount: number;
+  grandTotal: number;
+  status: 'DRAFT' | 'ISSUED' | 'PAID' | 'CANCELLED';
 }
 
 export interface Expense {
@@ -146,7 +193,7 @@ export interface Property {
   status: PropertyStatus;
   rentalType: RentalType;
   rentAmount: number;
-  paymentDueDate: number; 
+  paymentDueDate: number; // วันที่ชำระเงิน (1-31)
   contractStartDate?: string;
   contractEndDate?: string;
   tenantName?: string;
@@ -156,6 +203,7 @@ export interface Property {
   expenses: Expense[];
   inspections: InspectionItem[];
   linkedMembers: LinkedMember[];
+  paymentHistory: PaymentRecord[];
   repairStatus: RepairStatus;
   cancellationReason?: string;
   cancellationDate?: string;
@@ -184,32 +232,4 @@ export interface AppNotification {
   date: string;
   type: 'PAYMENT' | 'CONTRACT' | 'SYSTEM';
   isRead: boolean;
-}
-
-export type AccountingDocType = 'RECEIPT' | 'INVOICE' | 'QUOTATION';
-
-export interface AccountingItem {
-  id: string;
-  description: string;
-  quantity: number;
-  pricePerUnit: number;
-  total: number;
-}
-
-export interface AccountingDocument {
-  id: string;
-  type: AccountingDocType;
-  docNumber: string;
-  date: string;
-  clientName: string;
-  clientAddress: string;
-  clientTaxId: string;
-  items: AccountingItem[];
-  subtotal: number;
-  vatPercent: number;
-  vatAmount: number;
-  whtPercent: number;
-  whtAmount: number;
-  grandTotal: number;
-  status: 'DRAFT' | 'SENT' | 'PAID' | 'VOID';
 }
