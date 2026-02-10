@@ -99,6 +99,10 @@ const App: React.FC = () => {
     rentalType: RentalType.MONTHLY,
     rentAmount: 0,
     paymentDueDate: 1,
+    contractStartDate: '',
+    contractEndDate: '',
+    tenantName: '',
+    tenantPhone: '',
     bookings: [],
     documents: [],
     expenses: [],
@@ -184,7 +188,7 @@ const App: React.FC = () => {
     const createdProperty: Property = {
       ...newPropData as Property,
       id: Math.random().toString(36).substr(2, 9),
-      status: PropertyStatus.VACANT,
+      status: (newPropData.tenantName && newPropData.contractStartDate) ? PropertyStatus.OCCUPIED : PropertyStatus.VACANT,
       bookings: [],
       documents: [],
       expenses: [],
@@ -206,7 +210,11 @@ const App: React.FC = () => {
       status: PropertyStatus.VACANT,
       rentalType: RentalType.MONTHLY,
       rentAmount: 0,
-      paymentDueDate: 1
+      paymentDueDate: 1,
+      contractStartDate: '',
+      contractEndDate: '',
+      tenantName: '',
+      tenantPhone: ''
     });
     alert('เพิ่มข้อมูลที่พักเรียบร้อยแล้ว');
   };
@@ -405,16 +413,46 @@ const App: React.FC = () => {
                     />
                   </div>
                   {newPropData.rentalType === RentalType.MONTHLY && (
-                    <div className="md:col-span-2">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">วันครบกำหนดชำระ (ทุกวันที่...)</label>
-                      <input 
-                        type="number" 
-                        min="1" 
-                        max="31"
-                        value={newPropData.paymentDueDate}
-                        onChange={e => setNewPropData({...newPropData, paymentDueDate: parseInt(e.target.value) || 1})}
-                        className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                      />
+                    <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-50">
+                       <div className="md:col-span-2">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">ชื่อผู้เช่า (ถ้ามี)</label>
+                          <input 
+                            type="text" 
+                            value={newPropData.tenantName}
+                            onChange={e => setNewPropData({...newPropData, tenantName: e.target.value})}
+                            className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            placeholder="ระบุชื่อผู้เช่า"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">วันเริ่มสัญญา</label>
+                          <input 
+                            type="date" 
+                            value={newPropData.contractStartDate}
+                            onChange={e => setNewPropData({...newPropData, contractStartDate: e.target.value})}
+                            className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">วันสิ้นสุดสัญญา</label>
+                          <input 
+                            type="date" 
+                            value={newPropData.contractEndDate}
+                            onChange={e => setNewPropData({...newPropData, contractEndDate: e.target.value})}
+                            className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">วันครบกำหนดชำระ (ทุกวันที่...)</label>
+                          <input 
+                            type="number" 
+                            min="1" 
+                            max="31"
+                            value={newPropData.paymentDueDate}
+                            onChange={e => setNewPropData({...newPropData, paymentDueDate: parseInt(e.target.value) || 1})}
+                            className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                          />
+                        </div>
                     </div>
                   )}
                 </div>

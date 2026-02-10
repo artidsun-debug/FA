@@ -17,6 +17,7 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property, onUpdate, onD
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isEditingInfo, setIsEditingInfo] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
+  const [renewMonths, setRenewMonths] = useState(12);
   const [editData, setEditData] = useState<Property>(property);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inspectionPhotosRef = useRef<HTMLInputElement>(null);
@@ -58,16 +59,28 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property, onUpdate, onD
   const stats = getContractStats();
 
   const handleRenew = (months: number) => {
-    if (!property.contractEndDate) return;
-    const currentEnd = new Date(property.contractEndDate);
-    const newEnd = new Date(currentEnd.setMonth(currentEnd.getMonth() + months));
-    onUpdate({
-      ...property,
-      contractEndDate: newEnd.toISOString().split('T')[0],
-      status: PropertyStatus.OCCUPIED 
-    });
+    if (!property.contractEndDate) {
+        // If no end date, set from today
+        const start = new Date();
+        const end = new Date();
+        end.setMonth(end.getMonth() + months);
+        onUpdate({
+            ...property,
+            contractStartDate: start.toISOString().split('T')[0],
+            contractEndDate: end.toISOString().split('T')[0],
+            status: PropertyStatus.OCCUPIED 
+        });
+    } else {
+        const currentEnd = new Date(property.contractEndDate);
+        const newEnd = new Date(currentEnd.setMonth(currentEnd.getMonth() + months));
+        onUpdate({
+            ...property,
+            contractEndDate: newEnd.toISOString().split('T')[0],
+            status: PropertyStatus.OCCUPIED 
+        });
+    }
     setShowRenewModal(false);
-    alert(`ต่อสัญญาเรียบร้อยแล้ว สิ้นสุดวันที่ ${newEnd.toISOString().split('T')[0]}`);
+    alert(`ต่อสัญญาเรียบร้อยแล้ว (${months} เดือน)`);
   };
 
   const handleCancelContract = () => {
@@ -207,11 +220,73 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property, onUpdate, onD
         </div>
       )}
 
+      {/* Renew Modal */}
+      {showRenewModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2.5rem] p-10 w-full max-w-md shadow-2xl animate-in zoom-in duration-200">
+            <div className="text-center mb-8">
+               <span className="text-5xl block mb-4">📄</span>
+               <h3 className="text-2xl font-black text-slate-900">ต่อสัญญาเช่า</h3>
+               <p className="text-sm text-slate-500 mt-2">ระบุจำนวนเดือนที่ต้องการขยายสัญญา</p>
+            </div>
+            
+            <div className="space-y-6 mb-8">
+               <div className="grid grid-cols-2 gap-4">
+                  {[6, 12, 24, 36].map(m => (
+                    <button 
+                     key={m} 
+                     onClick={() => setRenewMonths(m)}
+                     className={`py-4 rounded-2xl border-2 font-black transition-all ${renewMonths === m ? 'bg-indigo-600 text-white border-indigo-700 shadow-lg' : 'bg-slate-50 text-slate-400 border-slate-100 hover:border-indigo-300'}`}
+                    >
+                      {m} เดือน
+                    </button>
+                  ))}
+               </div>
+
+               <div className="pt-4 border-t border-slate-50">
+                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-3 text-center">ปรับแต่งจำนวนเดือน (เพิ่ม/ลด)</label>
+                 <div className="flex items-center justify-between gap-4 p-2 bg-slate-50 rounded-2xl border border-slate-100">
+                    <button 
+                      onClick={() => setRenewMonths(prev => Math.max(1, prev - 1))}
+                      className="w-12 h-12 rounded-xl bg-white shadow-sm border border-slate-200 text-xl font-black text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center"
+                    >
+                      −
+                    </button>
+                    <div className="flex-1 text-center">
+                      <input 
+                        type="number" 
+                        value={renewMonths}
+                        onChange={e => setRenewMonths(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-full text-center bg-transparent outline-none font-black text-2xl text-indigo-600"
+                      />
+                      <p className="text-[10px] font-bold text-slate-300 uppercase">Months</p>
+                    </div>
+                    <button 
+                      onClick={() => setRenewMonths(prev => prev + 1)}
+                      className="w-12 h-12 rounded-xl bg-white shadow-sm border border-slate-200 text-xl font-black text-slate-400 hover:text-emerald-500 transition-colors flex items-center justify-center"
+                    >
+                      +
+                    </button>
+                 </div>
+               </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button onClick={() => setShowRenewModal(false)} className="flex-1 py-4 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl">ยกเลิก</button>
+              <button onClick={() => handleRenew(renewMonths)} className="flex-[2] py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 shadow-xl shadow-slate-300">ยืนยันการต่อสัญญา</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center no-print">
         <button onClick={onBack} className="text-slate-500 hover:text-slate-800 flex items-center gap-2 transition-colors"><span>← กลับสู่รายการ</span></button>
         <div className="flex gap-2">
           {property.status !== PropertyStatus.CANCELED && (
-            <button onClick={() => setShowCancelModal(true)} className="px-4 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl text-sm font-bold flex items-center gap-2 transition-all">🚫 ยกเลิกสัญญา</button>
+            <>
+                <button onClick={() => setShowRenewModal(true)} className="px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-xl text-sm font-bold flex items-center gap-2 transition-all border border-indigo-100">✨ ต่อสัญญา</button>
+                <button onClick={() => setShowCancelModal(true)} className="px-4 py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl text-sm font-bold flex items-center gap-2 transition-all">🚫 ยกเลิกสัญญา</button>
+            </>
           )}
           <button onClick={handleDelete} className="px-4 py-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl text-sm font-bold flex items-center gap-2 transition-all border border-rose-100"><span className="text-lg">🗑️</span> ลบที่พัก</button>
         </div>
@@ -261,12 +336,16 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property, onUpdate, onD
                         <div className="col-span-2"><label className="text-[10px] font-bold text-slate-400 uppercase">ชื่อโครงการ</label><input type="text" className="w-full bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-sm" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} /></div>
                         <div><label className="text-[10px] font-bold text-slate-400 uppercase">ตึก</label><input type="text" className="w-full bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-sm" value={editData.building} onChange={e => setEditData({...editData, building: e.target.value})} /></div>
                         <div><label className="text-[10px] font-bold text-slate-400 uppercase">ชั้น</label><input type="text" className="w-full bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-sm" value={editData.floor} onChange={e => setEditData({...editData, floor: e.target.value})} /></div>
+                        <div><label className="text-[10px] font-bold text-slate-400 uppercase">วันเริ่มสัญญา</label><input type="date" className="w-full bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-sm" value={editData.contractStartDate} onChange={e => setEditData({...editData, contractStartDate: e.target.value})} /></div>
+                        <div><label className="text-[10px] font-bold text-slate-400 uppercase">วันสิ้นสุดสัญญา</label><input type="date" className="w-full bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-sm" value={editData.contractEndDate} onChange={e => setEditData({...editData, contractEndDate: e.target.value})} /></div>
                       </div>
                     ) : (
                       <div className="space-y-3">
                         <div className="flex justify-between"><span className="text-slate-500">ค่าเช่ารายเดือน</span><span className="font-bold text-slate-900">฿{property.rentAmount.toLocaleString()}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">วันครบกำหนดชำระ</span><span className="font-bold text-slate-900">วันที่ {property.paymentDueDate}</span></div>
                         <div className="flex justify-between"><span className="text-slate-500">ชื่อผู้เช่า</span><span className="font-bold text-slate-900">{property.tenantName || '-'}</span></div>
+                        <div className="flex justify-between border-t pt-2 mt-2"><span className="text-slate-500 text-xs">เริ่มสัญญา</span><span className="text-xs font-bold">{property.contractStartDate || '-'}</span></div>
+                        <div className="flex justify-between"><span className="text-slate-500 text-xs">สิ้นสุดสัญญา</span><span className="text-xs font-bold">{property.contractEndDate || '-'}</span></div>
                       </div>
                     )}
                   </div>
@@ -283,6 +362,12 @@ const PropertyDetail: React.FC<PropertyDetailProps> = ({ property, onUpdate, onD
                       <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden mb-4"><div className="h-full bg-emerald-500" style={{ width: `${stats.progress}%` }}></div></div>
                       <div className="flex justify-between items-center"><p className="text-xl font-black">{stats.daysLeft} วัน</p><p className="text-sm font-bold">{stats.progress}%</p></div>
                    </div>
+                   {stats.status === 'EXPIRING_SOON' && (
+                     <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl">
+                        <p className="text-xs font-bold text-amber-800">⚠️ สัญญาจะหมดอายุในอีก {stats.daysLeft} วัน</p>
+                        <button onClick={() => setShowRenewModal(true)} className="text-[10px] font-black uppercase tracking-widest text-indigo-600 mt-2 hover:underline">คลิกเพื่อต่อสัญญาตอนนี้</button>
+                     </div>
+                   )}
                 </div>
               </div>
             </div>
