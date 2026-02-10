@@ -1,0 +1,7 @@
+{
+  "name": "Firstarthur Rental Management",
+  "description": "An advanced property and rental management system featuring automated notifications, contract tracking, expense management, and AI-powered insights for Firstarthur company.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
